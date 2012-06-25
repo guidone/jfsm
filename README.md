@@ -69,7 +69,7 @@ In addition, when a transition is completed, an event 'jfsm-state' is triggered 
 	See the example below about defining a new descriptor
 	* predefined_value(anything|function): defines which is the default value of the field in the state descriptor
 
-# Adding a fadeout descriptor
+## Adding a fadeout descriptor
 
 Suppose I want to hide/show elements during transition using a fancy fade in/out effect.
 First of all, register the *fade* key for the state descriptor:
