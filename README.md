@@ -58,10 +58,12 @@ At first sight seems I've written more code, perhaps it's true, but I've grouped
 It's possible to register your own key in the descriptor, see below.
 - **$.jfsm('to-state')**: Change the state the to 'to-state', triggering all the UI changes defined with the function above.
 It always return a Deferred() object since the changes to the UI might be asynchronous.
+
 	$.jfsm('to-state')
 		.done(function() {
 			// ta da
 			});
+
 In addition, when a transition is completed, an event 'jfsm-state' is triggered on *$('body')*, the first argument is the new state name.
 - **$.jfsm(new_descriptor,descriptor_handler,predefined_value)**: Define a new key for the state descriptor object
 	* new_descriptor(string): a string representing the key in the state descriptor
