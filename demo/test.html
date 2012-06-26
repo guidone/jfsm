@@ -1,9 +1,8 @@
 <html>
 	<head>
 		<title>JQuery Finite State Machine </title>
-		<script src="jquery.js"></script>
-		<script src="stackable.js"></script>
-		<script src="jfstm.jquery.js"></script>
+		<script src="./jquery.js"></script>
+		<script src="../jfstm.jquery.js"></script>
 		
 	</head>
 	<body>
@@ -12,32 +11,8 @@
 	
 	$(function() {
 		
-	
-		$.jfsm(
-			'fade',
-			function(from,to) {
-				
-				to = !!to;
-				var deferred = $.Deferred();
-				var that = $(this);
-				
-				if (to) {
-					that.fadeIn(function() {
-						deferred.resolve();	
-						});
-					}
-				else {
-					that.fadeOut(function() {
-						deferred.resolve();	
-						});					
-					}				
-				
-				return deferred.promise();
-				},
-			false
-			);
-		
-		
+
+			
 		$('body')
 			.bind('jfsm_state',function(evt,state) {
 				console.info('Changed stated to',state);

@@ -1,0 +1,77 @@
+<html>
+	<head>
+		<title>JQuery Finite State Machine </title>
+		<script src="./jquery.js"></script>
+		<script src="../jfstm.jquery.js"></script>
+		
+	</head>
+	<body>
+	
+	<script>
+	
+	$(function() {
+		
+	
+		$.jfsm(
+			'fade',
+			function(from,to) {
+				
+				to = !!to;
+				var deferred = $.Deferred();
+				var that = $(this);
+				
+				if (to) {
+					that.fadeIn(function() {
+						deferred.resolve();	
+						});
+					}
+				else {
+					that.fadeOut(function() {
+						deferred.resolve();	
+						});					
+					}				
+				
+				return deferred.promise();
+				},
+			true
+			);
+		
+		
+		$('body')
+			.bind('jfsm_state',function(evt,state) {
+				console.info('Changed stated to',state);
+				});
+		
+		$('.btn1')
+			.jfsm('step1',{ fade: true, className: 'barabba', click: function() {alert('faccio 1'); return false; }})
+			.jfsm('step2', { fade: false, className: 'ciappino', click: function() { alert('faccio 2'); return false;}})
+			.jfsm('step3', { fade: true, click: function() {alert('faccio 3'); return false;}});
+		
+		$('.btn2')
+			.jfsm('step1',{ fade: false })
+			.jfsm('step2',{ fade: true, className: 'hola' })
+			.jfsm('step3',{ fade: false, className: 'hola' });
+
+		$('.btn3')
+			.jfsm('step1',{ fade: false })
+			.jfsm('step2',{ fade: false, className: 'hola' })
+			.jfsm('step3',{ fade: true, className: 'hola' });
+					
+		});
+	
+	
+	</script>
+	
+		
+		<a href="#" class="btn1">Button 1</a>
+		
+		<a href="#" class="btn2">Button 2</a>
+		
+		<a href="#" class="btn3">Button 3</a>
+		
+		
+		
+		
+		
+	</body>
+</html>

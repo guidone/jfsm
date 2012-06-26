@@ -1,4 +1,10 @@
-
+/*
+	jQuery Finite State Machine - version 1.0
+	http://github.com/guidone/jfsm
+	Guido Bellomo
+	guido.bellomo@gmail.com - http://javascript-jedi.com
+	Free for personal and commercial use under the MIT/GPL license used by the jQuery core libraries.
+*/
 $(function() {
 
 	var _uid_generator = 1;
@@ -162,12 +168,40 @@ $(function() {
 		
 		}
 	
+	
+	
+	function _parallel(stack) {
+		
+		var deferred = $.Deferred();
+		var idx = 0;
+		var counter = stack.length;
+		var sub_and_check = function() {
+			counter--;
+			if (counter == 0) deferred.resolve();
+			};
+		
+		for (idx = 0; idx < stack.length; idx++) {
+			var tmp = stack[idx].call();
+			// is this a deferred
+			if ($.isFunction(tmp.done)) {
+				tmp.always(sub_and_check);
+				}
+			else {
+				sub_and_check();
+				}			
+			}				
+						
+		return deferred.promise();		
+		}
+	
+	
 	function _executeTransition(state) {
 		
 		
 		var _matrix = _transitionMatrix(state);
 		var deferred = $.Deferred();				
-		var stack = $function();
+		//var stack = $function();
+		var stack = [];
 	
 		$(_matrix).each(function(idx) {
 			var action = this;				
@@ -181,7 +215,8 @@ $(function() {
 				});
 			});
 		
-		$.when(stack.promise())
+		//$.when(stack.promise())
+		_parallel(stack)
 			.done(function() {
 				
 				// cast event
