@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>jFsm by guidone</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>jFsm</h1>
+        <p>jQuery Finite State Machine</p>
+        <p class="view"><a href="https://github.com/guidone/jfsm">View the Project on GitHub <small>guidone/jfsm</small></a></p>
+        <ul>
+          <li><a href="https://github.com/guidone/jfsm/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/guidone/jfsm/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/guidone/jfsm">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>jQuery Finite State Machine</h1>
+
+<p><strong>jfsm</strong> stands for jQuery Finite State Machine and it's a little script to help handling UI controls passing from a state to another.</p>
+
+<h2>An example</h2>
+
+<p>Have you ever found yourself in a situation writing code like this?</p>
+
+<pre><code>$('a.button1')
+    .click(function() {
+        // go to step2
+        $('a.letsGoBack').show();
+        $('a.button1').hide();
+        $('a.button2').show();
+        });     
+$('a.button2')
+    .click(function() {
+        // go to step3
+        $('a.letsGoBack').show();
+        $('a.button1').hide();
+        $('a.button2').hide();
+        $('a.save').show();
+        $('.controlToDisableInStep3').addClass('disabled');
+        });
+</code></pre>
+
+<p>In this script some controls must be visible and enabled in a state (for example step #1 of a wizard) and/or invisible in the next state.
+Nothing wrong with the code above, but as soon as the complexity of the UI grows up, the code become un-mantainable.</p>
+
+<p>Wouldn't be easier to define a set of possible states for our UI (for example step1, step2 and step3 for our multistep form) and define for each of them the behaviour of the UI components</p>
+
+<pre><code>$('a.button1')
+    .jfsm('step1',{visible: true})
+    .jfsm('step2',{visible: false})
+    .jfsm('step3',{visible: false});
+$('a.button2')
+    .jfsm('step1',{visible: false})
+    .jfsm('step2',{visible: true})
+    .jfsm('step3',{visible: false});        
+$('a.save')
+    .jfsm('step1',{visible: false})
+    .jfsm('step2',{visible: false})
+    .jfsm('step3',{visible: true});
+$('a.letsGoBack')
+    .jfsm('step1',{visible: false})
+    .jfsm('step2',{visible: true})
+    .jfsm('step3',{visible: true});
+$('.controlToDisableInStep3')
+    .jfsm('step3',{className: 'disabled'});
+</code></pre>
+
+<p>Then with a simple command we change the state <em>$.jfsm('step3')</em> and it will do the magic for you: <em>.button2</em> and <em>.button1</em> are hidden, <em>.save</em> and .letsGoBack are visible and the control .controlToDisableInStep3 gains the class 'disabled'.
+At first sight seems I've written more code, perhaps it's true, but I've grouped this kind of logic in just one place and it's easier to add element to the UI.</p>
+
+<h2>Syntax</h2>
+
+<ul>
+<li>$('element-selector').jfsm('mystate',);
+Define a descriptor for an element on the state 'mystate'. The descriptor is an hash array which may contains one or more of these keys:
+
+<ul>
+<li>visible (true| false): make this element visibile or hidden in the defined state. The default is true (means that in any other state, if not specified, the element is visible)</li>
+<li>className: assign a CCS class to the element in the defined state</li>
+<li>click: assign a click handler for the element in the defined state (how did I do before this? Checking the state of the UI inside the click handler? Naaaa)
+It's possible to register your own key in the descriptor, see below.</li>
+</ul>
+</li>
+<li>$.jfsm('to-state');
+Change the state the to 'to-state', triggering all the UI changes defined with the function above.
+It always return a Deferred() object since the changes to the UI might be asynchronous.
+$.jfsm('to-state')
+    .done(function() {
+        // ta da
+        });
+In addition, when a transition is completed, an event 'jfsm-state' is triggered on $    ('body'), the first argument is the new state name.</li>
+<li>$.jfsm(new_descriptor,descriptor_handler,predefined_value);
+Define a new key for the state descriptor object</li>
+<li>new_descriptor(string): a string representing the key in the state descriptor</li>
+<li>descriptor_handler(function): the handler that operates the changes on the UI. The context (this) is the UI element to be changed, accepts two parameters f(from,to) which are the values of the key in the previous and new state, respectively (if these two values are the same in the transition, the handler will not be called).
+See the example below about defining a new descriptor</li>
+<li>predefined_value(anything|function): defines which is the default value of the field in the state descriptor
+
+<ul>
+<li>new_descriptor(string): a string representing the key in the state descriptor</li>
+<li>descriptor_handler(function): the handler that operates the changes on the UI. The context (this) is the UI element to be changed, accepts two parameters f(from,to) which are the values of the key in the previous and new state, respectively (if these two values are the same in the transition, the handler will not be called).
+See the example below about defining a new descriptor</li>
+<li>predefined_value(anything|function): defines which is the default value of the field in the state descriptor</li>
+</ul>
+</li>
+</ul><h1>Adding a fadeout descriptor</h1>
+
+<p>Suppose I want to hide/show elements during transition using a fancy fade in/out effect.
+First of all, register the <em>fade</em> key for the state descriptor:</p>
+
+<pre><code>$.jfsm(
+    'fade',
+    function(from,to) {
+        to = !!to; // to be sure is true or false
+        if (to) 
+            $(this).fadeIn();
+        else $(this).fadeOut(); 
+        },
+    true
+    ); 
+</code></pre>
+
+<p>Then define the behaviour of the button</p>
+
+<pre><code>$('a.button1')
+    .jfsm('step1',{fade: true})
+    .jfsm('step2',{fade: false});
+</code></pre>
+
+<p>And now <em>$.jfsm('step1')</em> and <em>$.jfsm('step2')</em> will switch the state between <em>step1</em> and <em>step2</em>, happily fading in and out your button.
+But we can do even better, jfsm handles correctly deferred objects, we can improve the handler in this way:</p>
+
+<pre><code>$.jfsm(
+    'fade',
+    function(from,to) {
+        to = !!to; // to be sure is true or false
+        var deferred = $.Deferred();
+        if (to) 
+            $(this).fadeIn(function() { deferred.resolve(); });
+        else $(this).fadeOut( function() { deferred.resolve(); }); 
+        return deferred.promise();
+        },
+    true
+    );  
+</code></pre>
+
+<p>The event <em>'jfsm-state'</em> will be triggerd only when the fade transition is completed, or I can just use the deferred object returned by $.jfsm:</p>
+
+<pre><code>$.jfsm('step1')
+    .done(function() {
+        // done fading
+        });
+</code></pre>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/guidone">guidone</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+    
+  </body>
+</html>
